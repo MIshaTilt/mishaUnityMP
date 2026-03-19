@@ -25,8 +25,8 @@ public class PlayerNetwork : NetworkBehaviour
             // Только владелец отправляет на сервер свой локально введенный ник.
             SubmitNicknameServerRpc(ConnectionUI.PlayerNickname);
 
-            Vector3 randomPos = new Vector3(Random.Range(-3f, 3f), 0, 0);
-            transform.position = randomPos;
+            /*Vector3 randomPos = new Vector3(Random.Range(-3f, 3f), 0, 0);
+            transform.position = randomPos;*/
         }
     }
 

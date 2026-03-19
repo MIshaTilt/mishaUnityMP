@@ -7,13 +7,45 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] private PlayerNetwork _playerNetwork;
     [SerializeField] private int _damage = 10;
     [SerializeField] private float _attackRange = 5f;
-
+    [SerializeField] private InputActionAsset _inputAsset;
+    
+    private InputAction _attackAction;
     private Camera _mainCamera;
 
     private void Start()
     {
         _mainCamera = Camera.main;
         Debug.Log("Init");
+    }
+
+    private void Awake()
+    {
+        if (_inputAsset != null)
+        {
+            var playerMap = _inputAsset.FindActionMap("Player");
+            if (playerMap != null)
+            {
+                _attackAction = playerMap.FindAction("Attack");
+            }
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        // Включаем прослушивание кнопок ТОЛЬКО для своего персонажа
+        if (IsOwner)
+        {
+            _attackAction.Enable();
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // Не забываем выключать, чтобы избежать ошибок при удалении объекта
+        if (IsOwner)
+        {
+            _attackAction.Disable();
+        }
     }
 
     private void Update()
@@ -23,7 +55,7 @@ public class PlayerCombat : NetworkBehaviour
 
         // Используем новый Input System для проверки клика
         // Мы используем Mouse.current, так как это стандарт для мыши
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        if (_attackAction != null && _attackAction.WasPerformedThisFrame())
         {
             PerformAttack();
         }
