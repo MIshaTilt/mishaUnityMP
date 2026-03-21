@@ -13,10 +13,13 @@ public class PlayerMovement : NetworkBehaviour
     private InputAction _moveAction;
     private CharacterController _cc;
     private float _verticalVelocity;
+    private PlayerNetwork _playerNetwork;
+
 
     private void Awake() 
     {
         _cc = GetComponent<CharacterController>();
+        _playerNetwork = GetComponent<PlayerNetwork>();
 
         var playerMap = _inputAsset.FindActionMap("Player");
         _moveAction = playerMap.FindAction("Move");
@@ -44,12 +47,13 @@ public class PlayerMovement : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner) return;
+        if (!_playerNetwork.IsAlive.Value) return;
 
         // Читаем значения WASD. Это будет Vector2, где X - влево/вправо, Y - вверх/вниз
         Vector2 inputDir = _moveAction.ReadValue<Vector2>();
 
         // Перекладываем 2D ввод в 3D пространство (X идет в X, а Y идет в Z!)
-        Vector3 move = new Vector3(inputDir.x, 0f, inputDir.y).normalized * _speed;
+        Vector3 move = (transform.right * inputDir.x + transform.forward * inputDir.y).normalized * _speed;
 
         // Гравитация
         _verticalVelocity += _gravity * Time.deltaTime;

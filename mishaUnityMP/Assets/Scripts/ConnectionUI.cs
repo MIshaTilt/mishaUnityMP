@@ -5,6 +5,7 @@ using UnityEngine;
 public class ConnectionUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField _nicknameInput;
+    [SerializeField] private GameObject _menuPanel;
 
     // Сохраняем ник локально до появления сетевого объекта игрока.
     public static string PlayerNickname { get; private set; } = "Player";
@@ -14,6 +15,7 @@ public class ConnectionUI : MonoBehaviour
         SaveNickname();
         // Хост одновременно является сервером и клиентом.
         NetworkManager.Singleton.StartHost();
+        _menuPanel.SetActive(false);
     }
 
     public void StartAsClient()
@@ -21,6 +23,7 @@ public class ConnectionUI : MonoBehaviour
         SaveNickname();
         // Клиент только подключается к уже запущенному хосту/серверу.
         NetworkManager.Singleton.StartClient();
+        _menuPanel.SetActive(false);
     }
 
     private void SaveNickname()

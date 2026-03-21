@@ -1,39 +1,60 @@
-using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using TMPro;
 using Unity.Collections;
 
 public class PlayerView : NetworkBehaviour
 {
     [SerializeField] private PlayerNetwork _playerNetwork;
-    [SerializeField] private TMP_Text _nicknameText;
-    [SerializeField] private TMP_Text _hpText;
+
+    [Header("UI над головой (для других)")]
+    [SerializeField] private GameObject _billboardCanvas;
+    [SerializeField] private TMP_Text _nicknameBillText;
+    [SerializeField] private TMP_Text _hpBillText;
+
+    [Header("HUD (для владельца)")]
+    [SerializeField] private GameObject _hudCanvas;
+    [SerializeField] private TMP_Text _nicknameHudText;
+    [SerializeField] private TMP_Text _hpHudText;
 
     public override void OnNetworkSpawn()
     {
-        // Подписываемся на изменения только после сетевого спавна объекта.
+        // 1. Управление видимостью целых канвасов
+        _billboardCanvas.SetActive(!IsOwner);
+        _hudCanvas.SetActive(IsOwner);
+
+        // 2. Подписка на изменения (обновляем и там и там, на случай если канвас включат)
         _playerNetwork.Nickname.OnValueChanged += OnNicknameChanged;
         _playerNetwork.HP.OnValueChanged += OnHpChanged;
 
-        // Сразу рисуем текущее состояние, чтобы UI не ждал первого сетевого события.
-        OnNicknameChanged(default, _playerNetwork.Nickname.Value);
-        OnHpChanged(0, _playerNetwork.HP.Value);
+        // 3. Первичное обновление
+        UpdateUI(_playerNetwork.Nickname.Value.ToString(), _playerNetwork.HP.Value);
     }
 
     public override void OnNetworkDespawn()
     {
-        // Отписка обязательна, чтобы не оставлять "висячие" обработчики.
         _playerNetwork.Nickname.OnValueChanged -= OnNicknameChanged;
         _playerNetwork.HP.OnValueChanged -= OnHpChanged;
     }
 
-    private void OnNicknameChanged(FixedString32Bytes oldValue, FixedString32Bytes newValue)
+    private void OnNicknameChanged(FixedString32Bytes old, FixedString32Bytes newValue)
     {
-        _nicknameText.text = newValue.ToString();
+        UpdateUI(newValue.ToString(), _playerNetwork.HP.Value);
     }
 
-    private void OnHpChanged(int oldValue, int newValue)
+    private void OnHpChanged(int old, int newValue)
     {
-        _hpText.text = $"HP: {newValue}";
+        UpdateUI(_playerNetwork.Nickname.Value.ToString(), newValue);
+    }
+
+    private void UpdateUI(string nickname, int hp)
+    {
+        // Обновляем текст в билборде (над головой)
+        _nicknameBillText.text = nickname;
+        _hpBillText.text = $"HP: {hp}";
+
+        // Обновляем текст в HUD (экранный)
+        _nicknameHudText.text = nickname;
+        _hpHudText.text = $"HP: {hp}";
     }
 }
