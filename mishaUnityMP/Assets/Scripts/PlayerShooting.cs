@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,16 +19,16 @@ public class PlayerShooting : NetworkBehaviour
     private void Awake()
     {
         _playerNetwork = GetComponent<PlayerNetwork>();
-        
+
         var playerMap = _inputAsset.FindActionMap("Player");
         _shootAction = playerMap.FindAction("Attack");
     }
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
         _currentAmmo = _maxAmmo;
 
-        if (IsOwner)
+        if (base.Owner.IsLocalClient)
         {
             _shootAction.Enable();
             // Подписываемся на событие нажатия кнопки
@@ -35,9 +36,9 @@ public class PlayerShooting : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkDespawn()
+    public override void OnStopNetwork()
     {
-        if (IsOwner)
+        if (base.IsOwner)
         {
             _shootAction.Disable();
             _shootAction.performed -= OnShootPerformed;
@@ -53,7 +54,7 @@ public class PlayerShooting : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void ShootServerRpc(Vector3 pos, Vector3 dir, ServerRpcParams rpc = default)
+    private void ShootServerRpc(Vector3 pos, Vector3 dir)
     {
         // ВАЛИДАЦИЯ НА СЕРВЕРЕ:
         // 1. Жив ли игрок?
@@ -72,8 +73,9 @@ public class PlayerShooting : NetworkBehaviour
         // Создаем пулю немного спереди, чтобы не попасть в самого себя при спавне
         var go = Instantiate(_projectilePrefab, pos + dir * 1.5f, Quaternion.LookRotation(dir));
         var no = go.GetComponent<NetworkObject>();
-        
+
         // Спавним пулю в сети и указываем, кто её владелец
-        no.SpawnWithOwnership(rpc.Receive.SenderClientId);
+        base.ServerManager.Spawn(go);
+        go.GetComponent<NetworkObject>().GiveOwnership(base.Owner);
     }
 }

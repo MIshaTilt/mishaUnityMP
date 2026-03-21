@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 
 public class Projectile : NetworkBehaviour
@@ -15,21 +16,21 @@ public class Projectile : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Урон рассчитывает ТОЛЬКО сервер!
-        if (!IsServer) return;
+        if (!base.IsServer) return;
 
         var target = other.GetComponent<PlayerNetwork>();
-        
+
         // Если попали не в игрока (например, в стену) - игнорируем
         if (target == null) return;
 
         // Защита: не наносим урон самому себе
-        if (target.OwnerClientId == OwnerClientId) return;
+        if (target.Owner.ClientId == base.OwnerId) return;
 
         // Наносим урон
         int newHp = Mathf.Max(0, target.HP.Value - _damage);
         target.HP.Value = newHp;
 
         // Уничтожаем пулю в сети
-        NetworkObject.Despawn(destroy: true);
+        base.ServerManager.Despawn(gameObject);
     }
 }

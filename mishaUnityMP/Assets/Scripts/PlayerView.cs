@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 using TMPro;
 using Unity.Collections;
@@ -17,34 +18,34 @@ public class PlayerView : NetworkBehaviour
     [SerializeField] private TMP_Text _nicknameHudText;
     [SerializeField] private TMP_Text _hpHudText;
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
         // 1. Управление видимостью целых канвасов
-        _billboardCanvas.SetActive(!IsOwner);
-        _hudCanvas.SetActive(IsOwner);
+        _billboardCanvas.SetActive(!base.Owner.IsLocalClient);
+        _hudCanvas.SetActive(base.Owner.IsLocalClient);
 
-        // 2. Подписка на изменения (обновляем и там и там, на случай если канвас включат)
-        _playerNetwork.Nickname.OnValueChanged += OnNicknameChanged;
-        _playerNetwork.HP.OnValueChanged += OnHpChanged;
+        // 2. Подписка на изменения SyncVar
+        _playerNetwork.Nickname.OnChange += OnNicknameChanged;
+        _playerNetwork.HP.OnChange += OnHpChanged;
 
         // 3. Первичное обновление
-        UpdateUI(_playerNetwork.Nickname.Value.ToString(), _playerNetwork.HP.Value);
+        UpdateUI(_playerNetwork.Nickname.Value, _playerNetwork.HP.Value);
     }
 
-    public override void OnNetworkDespawn()
+    public override void OnStopNetwork()
     {
-        _playerNetwork.Nickname.OnValueChanged -= OnNicknameChanged;
-        _playerNetwork.HP.OnValueChanged -= OnHpChanged;
+        _playerNetwork.Nickname.OnChange -= OnNicknameChanged;
+        _playerNetwork.HP.OnChange -= OnHpChanged;
     }
 
-    private void OnNicknameChanged(FixedString32Bytes old, FixedString32Bytes newValue)
+    private void OnNicknameChanged(string old, string newValue, bool asServer)
     {
-        UpdateUI(newValue.ToString(), _playerNetwork.HP.Value);
+        UpdateUI(newValue, _playerNetwork.HP.Value);
     }
 
-    private void OnHpChanged(int old, int newValue)
+    private void OnHpChanged(int old, int newValue, bool asServer)
     {
-        UpdateUI(_playerNetwork.Nickname.Value.ToString(), newValue);
+        UpdateUI(_playerNetwork.Nickname.Value, newValue);
     }
 
     private void UpdateUI(string nickname, int hp)

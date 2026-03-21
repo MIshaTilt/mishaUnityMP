@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,9 +16,9 @@ public class PlayerCamera : NetworkBehaviour
     private float _pitch; // Вверх-вниз
     private float _yaw;   // Влево-вправо
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
-        if (!IsOwner)
+        if (!base.Owner.IsLocalClient)
         {
             enabled = false;
             return;
@@ -35,7 +36,7 @@ public class PlayerCamera : NetworkBehaviour
         Cursor.visible = false;
     }
 
-    public override void OnNetworkDespawn()
+    public override void OnStopNetwork()
     {
         if (IsOwner)
         {

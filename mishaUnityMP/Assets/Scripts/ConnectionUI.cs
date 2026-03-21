@@ -1,11 +1,12 @@
 using TMPro;
-using Unity.Netcode;
+using FishNet.Managing;
 using UnityEngine;
 
 public class ConnectionUI : MonoBehaviour
 {
     [SerializeField] private TMP_InputField _nicknameInput;
     [SerializeField] private GameObject _menuPanel;
+    [SerializeField] private NetworkManager _networkManager;
 
     // Сохраняем ник локально до появления сетевого объекта игрока.
     public static string PlayerNickname { get; private set; } = "Player";
@@ -13,16 +14,20 @@ public class ConnectionUI : MonoBehaviour
     public void StartAsHost()
     {
         SaveNickname();
-        // Хост одновременно является сервером и клиентом.
-        NetworkManager.Singleton.StartHost();
-        _menuPanel.SetActive(false);
+        // 1. Запускаем сервер
+        if (_networkManager.ServerManager.StartConnection())
+        {
+            // 2. Если сервер успешно запустился, подключаем локальный клиент
+            _networkManager.ClientManager.StartConnection();
+            _menuPanel.SetActive(false);
+        }
     }
 
     public void StartAsClient()
     {
         SaveNickname();
         // Клиент только подключается к уже запущенному хосту/серверу.
-        NetworkManager.Singleton.StartClient();
+        _networkManager.ClientManager.StartConnection();
         _menuPanel.SetActive(false);
     }
 

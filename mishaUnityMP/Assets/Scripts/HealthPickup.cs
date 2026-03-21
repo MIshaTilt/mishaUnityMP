@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 
 public class HealthPickup : NetworkBehaviour
@@ -18,7 +19,7 @@ public class HealthPickup : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Подбирать предметы разрешено ТОЛЬКО на сервере! Клиенты просто ждут результата.
-        if (!IsServer) return;
+        if (!base.IsServer) return;
 
         // Проверяем, игрок ли в нас вошел
         var player = other.GetComponent<PlayerNetwork>();
@@ -35,8 +36,8 @@ public class HealthPickup : NetworkBehaviour
 
         // Сообщаем менеджеру, что нас подобрали, чтобы он запустил таймер респавна
         _manager.OnPickedUp(_spawnPosition);
-        
+
         // Уничтожаем аптечку в сети
-        GetComponent<NetworkObject>().Despawn(destroy: true);
+        base.ServerManager.Despawn(gameObject);
     }
 }

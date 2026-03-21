@@ -1,6 +1,7 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
-using UnityEngine.InputSystem; // Обязательно добавляем это
+using UnityEngine.InputSystem;
 
 public class PlayerCombat : NetworkBehaviour
 {
@@ -8,7 +9,7 @@ public class PlayerCombat : NetworkBehaviour
     [SerializeField] private int _damage = 10;
     [SerializeField] private float _attackRange = 5f;
     [SerializeField] private InputActionAsset _inputAsset;
-    
+
     private InputAction _attackAction;
     private Camera _mainCamera;
 
@@ -30,19 +31,19 @@ public class PlayerCombat : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
         // Включаем прослушивание кнопок ТОЛЬКО для своего персонажа
-        if (IsOwner)
+        if (base.Owner.IsLocalClient)
         {
             _attackAction.Enable();
         }
     }
 
-    public override void OnNetworkDespawn()
+    public override void OnStopNetwork()
     {
         // Не забываем выключать, чтобы избежать ошибок при удалении объекта
-        if (IsOwner)
+        if (base.IsOwner)
         {
             _attackAction.Disable();
         }
@@ -51,7 +52,7 @@ public class PlayerCombat : NetworkBehaviour
     private void Update()
     {
         // Проверяем: наш ли это объект?
-        if (!IsOwner) return;
+        if (!base.IsOwner) return;
 
         // Используем новый Input System для проверки клика
         // Мы используем Mouse.current, так как это стандарт для мыши
@@ -69,34 +70,37 @@ public class PlayerCombat : NetworkBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, _attackRange))
         {
             PlayerNetwork targetNetwork = hit.collider.GetComponent<PlayerNetwork>();
-            
+
             if (targetNetwork != null)
             {
-                Debug.Log($"[Combat] Нашел цель: {targetNetwork.name}. Попытка выстрела..."); // ДОБАВЬ ЭТО
+                Debug.Log($"[Combat] Нашел цель: {targetNetwork.name}. Попытка выстрела...");
                 TryAttack(targetNetwork);
             }
             else
             {
-                Debug.Log("[Combat] Луч прошел мимо или не нашел PlayerNetwork"); // И ЭТО
+                Debug.Log("[Combat] Луч прошел мимо или не нашел PlayerNetwork");
             }
         }
     }
 
     public void TryAttack(PlayerNetwork target)
     {
-        if (!IsOwner || target == null) return;
+        if (!base.IsOwner || target == null) return;
         Debug.Log("TryAttack");
-        DealDamageServerRpc(target.NetworkObjectId, _damage);
+        
+        NetworkObject targetObject = target.GetComponent<NetworkObject>();
+        if (targetObject != null)
+            DealDamageServerRpc(targetObject.ObjectId, _damage);
     }
 
     [ServerRpc]
-    private void DealDamageServerRpc(ulong targetObjectId, int damage)
+    private void DealDamageServerRpc(int targetObjectId, int damage)
     {
-        if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetObjectId, out NetworkObject targetObject))
+        if (!base.ServerManager.Objects.Spawned.TryGetValue(targetObjectId, out NetworkObject targetObject))
             return;
 
         PlayerNetwork targetPlayer = targetObject.GetComponent<PlayerNetwork>();
-        
+
         if (targetPlayer == null || targetPlayer == _playerNetwork) return;
 
         int nextHp = Mathf.Max(0, targetPlayer.HP.Value - damage);

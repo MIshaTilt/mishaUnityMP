@@ -1,4 +1,5 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,7 +17,7 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerNetwork _playerNetwork;
 
 
-    private void Awake() 
+    private void Awake()
     {
         _cc = GetComponent<CharacterController>();
         _playerNetwork = GetComponent<PlayerNetwork>();
@@ -26,19 +27,19 @@ public class PlayerMovement : NetworkBehaviour
 
     }
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
         // Включаем прослушивание кнопок ТОЛЬКО для своего персонажа
-        if (IsOwner)
+        if (base.Owner.IsLocalClient)
         {
             _moveAction.Enable();
         }
     }
 
-    public override void OnNetworkDespawn()
+    public override void OnStopNetwork()
     {
         // Не забываем выключать, чтобы избежать ошибок при удалении объекта
-        if (IsOwner)
+        if (base.IsOwner)
         {
             _moveAction.Disable();
         }
@@ -46,7 +47,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsOwner) return;
+        if (!base.IsOwner) return;
         if (!_playerNetwork.IsAlive.Value) return;
 
         // Читаем значения WASD. Это будет Vector2, где X - влево/вправо, Y - вверх/вниз
@@ -63,7 +64,7 @@ public class PlayerMovement : NetworkBehaviour
         _cc.Move(move * Time.deltaTime);
 
         // Обнуляем гравитацию, если стоим на земле
-        if (_cc.isGrounded) 
+        if (_cc.isGrounded)
         {
             _verticalVelocity = 0f;
         }

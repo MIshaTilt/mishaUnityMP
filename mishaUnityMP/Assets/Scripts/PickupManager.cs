@@ -1,7 +1,8 @@
-using Unity.Netcode;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // Обязательно добавляем для работы с List<>
+using System.Collections.Generic;
 
 public class PickupManager : NetworkBehaviour
 {
@@ -12,11 +13,11 @@ public class PickupManager : NetworkBehaviour
     // Массив, который запоминает, занята ли конкретная точка (true = занята, false = свободна)
     private bool[] _isPointOccupied;
 
-    public override void OnNetworkSpawn()
+    public override void OnStartNetwork()
     {
         // Менеджер работает ТОЛЬКО на сервере.
-        if (!IsServer) return;
-        
+        if (!base.IsServer) return;
+
         // Инициализируем массив размером с количество наших точек спавна.
         // По умолчанию все значения в bool-массиве равны false (все точки свободны).
         _isPointOccupied = new bool[_spawnPoints.Length];
@@ -58,9 +59,9 @@ public class PickupManager : NetworkBehaviour
 
         Transform spawnPoint = _spawnPoints[index];
         var go = Instantiate(_healthPickupPrefab, spawnPoint.position, Quaternion.identity);
-        
+
         go.GetComponent<HealthPickup>().Init(this);
-        go.GetComponent<NetworkObject>().Spawn();
+        base.ServerManager.Spawn(go);
     }
 
     public void OnPickedUp(Vector3 position)
