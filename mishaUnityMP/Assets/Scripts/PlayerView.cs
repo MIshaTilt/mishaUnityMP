@@ -19,15 +19,12 @@ public class PlayerView : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // 1. Управление видимостью целых канвасов
         _billboardCanvas.SetActive(!IsOwner);
         _hudCanvas.SetActive(IsOwner);
 
-        // 2. Подписка на изменения (обновляем и там и там, на случай если канвас включат)
         _playerNetwork.Nickname.OnValueChanged += OnNicknameChanged;
         _playerNetwork.HP.OnValueChanged += OnHpChanged;
 
-        // 3. Первичное обновление
         UpdateUI(_playerNetwork.Nickname.Value.ToString(), _playerNetwork.HP.Value);
     }
 
@@ -49,11 +46,9 @@ public class PlayerView : NetworkBehaviour
 
     private void UpdateUI(string nickname, int hp)
     {
-        // Обновляем текст в билборде (над головой)
         _nicknameBillText.text = nickname;
         _hpBillText.text = $"HP: {hp}";
 
-        // Обновляем текст в HUD (экранный)
         _nicknameHudText.text = nickname;
         _hpHudText.text = $"HP: {hp}";
     }

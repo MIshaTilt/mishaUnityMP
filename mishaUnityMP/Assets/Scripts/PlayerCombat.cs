@@ -32,7 +32,6 @@ public class PlayerCombat : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // Включаем прослушивание кнопок ТОЛЬКО для своего персонажа
         if (IsOwner)
         {
             _attackAction.Enable();
@@ -41,7 +40,6 @@ public class PlayerCombat : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        // Не забываем выключать, чтобы избежать ошибок при удалении объекта
         if (IsOwner)
         {
             _attackAction.Disable();
@@ -50,11 +48,8 @@ public class PlayerCombat : NetworkBehaviour
 
     private void Update()
     {
-        // Проверяем: наш ли это объект?
         if (!IsOwner) return;
 
-        // Используем новый Input System для проверки клика
-        // Мы используем Mouse.current, так как это стандарт для мыши
         if (_attackAction != null && _attackAction.WasPerformedThisFrame())
         {
             PerformAttack();
@@ -72,12 +67,12 @@ public class PlayerCombat : NetworkBehaviour
             
             if (targetNetwork != null)
             {
-                Debug.Log($"[Combat] Нашел цель: {targetNetwork.name}. Попытка выстрела..."); // ДОБАВЬ ЭТО
+                Debug.Log($"[Combat] Нашел цель: {targetNetwork.name}. Попытка выстрела...");
                 TryAttack(targetNetwork);
             }
             else
             {
-                Debug.Log("[Combat] Луч прошел мимо или не нашел PlayerNetwork"); // И ЭТО
+                Debug.Log("[Combat] Луч прошел мимо или не нашел PlayerNetwork");
             }
         }
     }
