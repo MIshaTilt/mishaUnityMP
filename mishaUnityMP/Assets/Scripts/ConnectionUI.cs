@@ -12,20 +12,17 @@ public class ConnectionUI : MonoBehaviour
     public void StartAsHost()
     {
         SaveNickname();
-        // Хост одновременно является сервером и клиентом.
         NetworkManager.Singleton.StartHost();
     }
 
     public void StartAsClient()
     {
         SaveNickname();
-        // Клиент только подключается к уже запущенному хосту/серверу.
         NetworkManager.Singleton.StartClient();
     }
 
     private void SaveNickname()
     {
-        // Нормализуем ввод, чтобы сервер не получил пустую строку.
         string rawValue = _nicknameInput != null ? _nicknameInput.text : string.Empty;
         PlayerNickname = string.IsNullOrWhiteSpace(rawValue) ? "Player" : rawValue.Trim();
     }

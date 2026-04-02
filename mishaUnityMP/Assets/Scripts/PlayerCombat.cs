@@ -21,8 +21,6 @@ public class PlayerCombat : NetworkBehaviour
         // Проверяем: наш ли это объект?
         if (!IsOwner) return;
 
-        // Используем новый Input System для проверки клика
-        // Мы используем Mouse.current, так как это стандарт для мыши
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             PerformAttack();
