@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class PlayerShooting : NetworkBehaviour
 {
@@ -9,6 +10,7 @@ public class PlayerShooting : NetworkBehaviour
     [SerializeField] private float _cooldown = 0.4f;
     [SerializeField] private int _maxAmmo = 10;
     [SerializeField] private InputActionAsset _inputAsset;
+    [SerializeField] private TMP_Text _ammoText;
 
     private InputAction _shootAction;
     private float _lastShotTime;
@@ -32,6 +34,9 @@ public class PlayerShooting : NetworkBehaviour
             _shootAction.Enable();
             _shootAction.performed += OnShootPerformed;
         }
+
+        _playerNetwork.IsAlive.OnValueChanged += OnIsAliveChanged;
+        UpdateAmmoUI();
     }
 
     public override void OnNetworkDespawn()
@@ -41,12 +46,31 @@ public class PlayerShooting : NetworkBehaviour
             _shootAction.Disable();
             _shootAction.performed -= OnShootPerformed;
         }
+
+        _playerNetwork.IsAlive.OnValueChanged -= OnIsAliveChanged;
+    }
+
+    private void OnIsAliveChanged(bool prev, bool next)
+    {
+        if (next && IsOwner)
+        {
+            _currentAmmo = _maxAmmo;
+            UpdateAmmoUI();
+        }
     }
 
     private void OnShootPerformed(InputAction.CallbackContext context)
     {
         if (!_playerNetwork.IsAlive.Value) return;
         ShootServerRpc(_firePoint.position, _firePoint.forward);
+    }
+
+    private void UpdateAmmoUI()
+    {
+        if (_ammoText != null)
+        {
+            _ammoText.text = $"Ammo: {_currentAmmo}/{_maxAmmo}";
+        }
     }
 
     [ServerRpc]
@@ -61,9 +85,23 @@ public class PlayerShooting : NetworkBehaviour
         _lastShotTime = Time.time;
         _currentAmmo--;
 
+        int ammoLeft = _currentAmmo;
+
         var go = Instantiate(_projectilePrefab, pos + dir * 1.5f, Quaternion.LookRotation(dir));
         var no = go.GetComponent<NetworkObject>();
 
         no.SpawnWithOwnership(rpc.Receive.SenderClientId);
+
+        ShootResultClientRpc(rpc.Receive.SenderClientId, ammoLeft);
+    }
+
+    [ClientRpc]
+    private void ShootResultClientRpc(ulong clientId, int ammoLeft)
+    {
+        if (NetworkManager.LocalClientId == clientId)
+        {
+            _currentAmmo = ammoLeft;
+            UpdateAmmoUI();
+        }
     }
 }

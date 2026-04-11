@@ -2,6 +2,7 @@ using System.Collections;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerNetwork : NetworkBehaviour
 {
@@ -22,6 +23,8 @@ public class PlayerNetwork : NetworkBehaviour
     NetworkVariableReadPermission.Everyone,
     NetworkVariableWritePermission.Server
     );
+
+    [SerializeField] private Slider _respawnSlider;
 
     private CharacterController _cc;
     private MeshRenderer _meshRenderer;
@@ -66,17 +69,28 @@ public class PlayerNetwork : NetworkBehaviour
         if (next <= 0 && IsAlive.Value)
         {
             IsAlive.Value = false;
-            StartCoroutine(RespawnRoutine());
+            StartCoroutine(RespawnRoutine(OwnerClientId));
         }
     }
 
-    private IEnumerator RespawnRoutine()
+    private IEnumerator RespawnRoutine(ulong clientId)
     {
-        yield return new WaitForSeconds(3f);
+        float respawnTime = 3f;
+        float elapsed = 0f;
+
+        while (elapsed < respawnTime)
+        {
+            elapsed += Time.deltaTime;
+            float progress = 1f - (elapsed / respawnTime);
+            UpdateRespawnUIClientRpc(clientId, progress);
+            yield return null;
+        }
+
+        UpdateRespawnUIClientRpc(clientId, 0f);
 
         GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag("Respawn");
         Vector3 newPos = Vector3.zero; // Позиция по умолчанию
-        
+
         if (spawnPoints.Length > 0)
         {
             newPos = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
@@ -103,6 +117,20 @@ public class PlayerNetwork : NetworkBehaviour
         if (_cc != null)
         {
             _cc.enabled = next;
+        }
+
+        if (_respawnSlider != null && IsOwner)
+        {
+            _respawnSlider.gameObject.SetActive(!next);
+        }
+    }
+
+    [ClientRpc]
+    private void UpdateRespawnUIClientRpc(ulong clientId, float progress)
+    {
+        if (NetworkManager.LocalClientId == clientId && _respawnSlider != null)
+        {
+            _respawnSlider.value = progress;
         }
     }
 
