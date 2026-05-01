@@ -19,7 +19,7 @@ public class HealthPickup : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Подбирать предметы разрешено ТОЛЬКО на сервере! Клиенты просто ждут результата.
-        if (!base.IsServer) return;
+        if (!base.IsServerInitialized) return;
 
         // Проверяем, игрок ли в нас вошел
         var player = other.GetComponent<PlayerNetwork>();

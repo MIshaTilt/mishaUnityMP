@@ -720,6 +720,9 @@ GameObject:
   - component: {fileID: 578277653}
   - component: {fileID: 578277655}
   - component: {fileID: 578277656}
+  - component: {fileID: 578277658}
+  - component: {fileID: 578277657}
+  - component: {fileID: 578277659}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -811,6 +814,64 @@ MonoBehaviour:
   _playerPrefab: {fileID: 8549500989266754977, guid: 80d2716f23929c542988b1bc11475982, type: 3}
   _addToDefaultScene: 1
   Spawns: []
+--- !u!114 &578277657
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 578277649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e08bb003fce297d4086cf8cba5aa459a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FishNet.Runtime::FishNet.Managing.Predicting.PredictionManager
+  _reduceReconcilesWithFramerate: 1
+  _minimumClientReconcileFramerate: 50
+  _createLocalStates: 1
+  _stateInterpolation: 2
+  _stateOrder: 1
+  _dropExcessiveReplicates: 1
+  _maximumServerReplicates: 15
+--- !u!114 &578277658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 578277649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fdaae44044276a49a52229c1597e33b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FishNet.Runtime::FishNet.Managing.Timing.TimeManager
+  _updateOrder: 0
+  _timingType: 0
+  _allowTickDropping: 1
+  _maximumFrameTicks: 3
+  _tickRate: 30
+  _pingInterval: 1
+  _physicsMode: 0
+--- !u!114 &578277659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 578277649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34e4a322dca349547989b14021da4e23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FishNet.Runtime::FishNet.Managing.Transporting.TransportManager
+  Transport: {fileID: 578277653}
+  _intermediateLayer: {fileID: 0}
+  _latencySimulator:
+    _enabled: 1
+    _simulateHost: 1
+    _latency: 200
+    _outOfOrder: 0
+    _packetLoss: 0
 --- !u!1 &597709914
 GameObject:
   m_ObjectHideFlags: 0

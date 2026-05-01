@@ -16,7 +16,7 @@ public class Projectile : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         // Урон рассчитывает ТОЛЬКО сервер!
-        if (!base.IsServer) return;
+        if (!base.IsServerInitialized) return;
 
         var target = other.GetComponent<PlayerNetwork>();
 

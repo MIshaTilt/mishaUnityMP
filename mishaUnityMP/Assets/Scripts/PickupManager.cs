@@ -16,7 +16,7 @@ public class PickupManager : NetworkBehaviour
     public override void OnStartNetwork()
     {
         // Менеджер работает ТОЛЬКО на сервере.
-        if (!base.IsServer) return;
+        if (!base.IsServerInitialized) return;
 
         // Инициализируем массив размером с количество наших точек спавна.
         // По умолчанию все значения в bool-массиве равны false (все точки свободны).

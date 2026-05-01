@@ -1,21 +1,39 @@
 using FishNet.Object;
-using FishNet.Object.Synchronizing;
+using FishNet.Object.Prediction;
+using FishNet.Transporting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Эта строчка гарантирует, что скрипт не добавится без CharacterController
-[RequireComponent(typeof(CharacterController))]
+public struct MoveData : IReplicateData
+{
+    public float Horizontal;
+    public float Vertical;
+
+    private uint _tick;
+    public void Dispose() { }
+    public uint GetTick() => _tick;
+    public void SetTick(uint value) => _tick = value;
+}
+
+public struct ReconcileData : IReconcileData
+{
+    public Vector3 Position;
+    public float VerticalVelocity;
+
+    private uint _tick;
+    public void Dispose() { }
+    public uint GetTick() => _tick;
+    public void SetTick(uint value) => _tick = value;
+}[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : NetworkBehaviour
 {
     [SerializeField] private float _speed = 5f;
-    [SerializeField] private float _gravity = -9.81f;
-    [SerializeField] private InputActionAsset _inputAsset;
+    [SerializeField] private float _gravity = -9.81f;[SerializeField] private InputActionAsset _inputAsset;
 
     private InputAction _moveAction;
     private CharacterController _cc;
     private float _verticalVelocity;
     private PlayerNetwork _playerNetwork;
-
 
     private void Awake()
     {
@@ -24,12 +42,12 @@ public class PlayerMovement : NetworkBehaviour
 
         var playerMap = _inputAsset.FindActionMap("Player");
         _moveAction = playerMap.FindAction("Move");
-
     }
 
     public override void OnStartNetwork()
     {
-        // Включаем прослушивание кнопок ТОЛЬКО для своего персонажа
+        base.TimeManager.OnTick += OnTick;
+
         if (base.Owner.IsLocalClient)
         {
             _moveAction.Enable();
@@ -38,35 +56,53 @@ public class PlayerMovement : NetworkBehaviour
 
     public override void OnStopNetwork()
     {
-        // Не забываем выключать, чтобы избежать ошибок при удалении объекта
+        if (base.TimeManager != null) base.TimeManager.OnTick -= OnTick;
+        if (base.IsOwner) _moveAction.Disable();
+    }
+
+    private void OnTick()
+    {
+        if (!_playerNetwork.IsAlive.Value) return;
+
         if (base.IsOwner)
         {
-            _moveAction.Disable();
+            Vector2 inputDir = _moveAction.ReadValue<Vector2>();
+            MoveData md = new MoveData { Horizontal = inputDir.x, Vertical = inputDir.y };
+            Replicate(md); 
+        }
+        else
+        {
+            Replicate(default);
         }
     }
 
-    private void Update()
+    [Replicate]
+    private void Replicate(MoveData md, ReplicateState state = ReplicateState.Invalid, Channel channel = Channel.Unreliable)
     {
-        if (!base.IsOwner) return;
-        if (!_playerNetwork.IsAlive.Value) return;
+        Vector3 moveDir = (transform.right * md.Horizontal + transform.forward * md.Vertical).normalized * _speed;
+        _verticalVelocity += _gravity * (float)base.TimeManager.TickDelta;
+        moveDir.y = _verticalVelocity;
 
-        // Читаем значения WASD. Это будет Vector2, где X - влево/вправо, Y - вверх/вниз
-        Vector2 inputDir = _moveAction.ReadValue<Vector2>();
+        _cc.Move(moveDir * (float)base.TimeManager.TickDelta);
 
-        // Перекладываем 2D ввод в 3D пространство (X идет в X, а Y идет в Z!)
-        Vector3 move = (transform.right * inputDir.x + transform.forward * inputDir.y).normalized * _speed;
+        if (_cc.isGrounded) _verticalVelocity = 0f;
+    }
 
-        // Гравитация
-        _verticalVelocity += _gravity * Time.deltaTime;
-        move.y = _verticalVelocity;
-
-        // Двигаем контроллер
-        _cc.Move(move * Time.deltaTime);
-
-        // Обнуляем гравитацию, если стоим на земле
-        if (_cc.isGrounded)
+    // НОВОЕ В FISHNET V4: Метод-создатель слепка данных для отката (ошибка была из-за его отсутствия)
+    public override void CreateReconcile()
+    {
+        ReconcileData rd = new ReconcileData
         {
-            _verticalVelocity = 0f;
-        }
+            Position = transform.position,
+            VerticalVelocity = _verticalVelocity
+        };
+        Reconcile(rd); 
+    }[Reconcile]
+    private void Reconcile(ReconcileData rd, Channel channel = Channel.Unreliable)
+    {
+        _cc.enabled = false;
+        transform.position = rd.Position;
+        _verticalVelocity = rd.VerticalVelocity;
+        _cc.enabled = true;
     }
 }

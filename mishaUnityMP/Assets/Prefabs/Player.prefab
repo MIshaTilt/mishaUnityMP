@@ -774,9 +774,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 029e5b9c3b0259a49bb704bb155b5416, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerNetwork
-  _componentIndexCache: 255
+  _componentIndexCache: 0
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
 --- !u!114 &889482805164186375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -789,9 +789,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5edc569a3efc70d4baca223642ca8ec2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerView
-  _componentIndexCache: 255
+  _componentIndexCache: 1
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
   _playerNetwork: {fileID: 651432400115547061}
   _billboardCanvas: {fileID: 1290486608022401698}
   _nicknameBillText: {fileID: 5705087815167904407}
@@ -836,9 +836,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6837aad5ca4747408affa07b890d199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  _componentIndexCache: 255
+  _componentIndexCache: 2
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
   _speed: 5
   _gravity: -9.81
   _inputAsset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -854,9 +854,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81c2c378cd1e0024c878ed557ceaddd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCamera
-  _componentIndexCache: 255
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
   _offset: {x: 0, y: 4, z: -6}
   _lookSensitivity: 0.2
   _inputAsset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -872,9 +872,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44cae68273b74f64395d3e8d457467c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerShooting
-  _componentIndexCache: 255
+  _componentIndexCache: 4
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
   _projectilePrefab: {fileID: 7607099155228863370, guid: 435c56f99494e1445a33f243fa9191e9, type: 3}
   _firePoint: {fileID: 5048197886084911023}
   _cooldown: 0.4
@@ -898,7 +898,13 @@ MonoBehaviour:
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours: []
+  NetworkBehaviours:
+  - {fileID: 651432400115547061}
+  - {fileID: 889482805164186375}
+  - {fileID: 6147957143584994064}
+  - {fileID: -8740387409969817121}
+  - {fileID: 5711626439711624313}
+  - {fileID: -1882115828273321214}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -909,9 +915,9 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
-  _initializedTimestamp: 0
+  _initializedTimestamp: -8584239721007384929
   NetworkObserver: {fileID: 0}
-  _enablePrediction: 0
+  _enablePrediction: 1
   _predictionType: 0
   _localReconcileCorrectionType: 2
   _graphicalObject: {fileID: 0}
@@ -925,15 +931,15 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 65535
+  <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 2092870565765373345
   SceneId: 0
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    Scale: {x: 0, y: 0, z: 0}
-    IsValid: 0
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    IsValid: 1
 --- !u!114 &-1882115828273321214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -946,9 +952,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FishNet.Runtime::FishNet.Component.Transforming.NetworkTransform
-  _componentIndexCache: 255
+  _componentIndexCache: 5
   _addedNetworkObject: {fileID: 8549500989266754977}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 8549500989266754977}
   _componentConfiguration: 0
   _synchronizeParent: 0
   _packing:
@@ -960,10 +966,10 @@ MonoBehaviour:
   _extrapolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  _clientAuthoritative: 1
-  _sendToOwner: 1
+  _clientAuthoritative: 0
+  _sendToOwner: 0
   _interval: 1
-  _synchronizePosition: 1
+  _synchronizePosition: 0
   _positionSensitivity: 0.001
   _positionSnapping:
     X: 0
