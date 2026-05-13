@@ -20,15 +20,28 @@ public class Projectile : NetworkBehaviour
 
         var target = other.GetComponent<PlayerNetwork>();
 
-        // Если попали не в игрока (например, в стену) - игнорируем
-        if (target == null) return;
+        // Если попали не в игрока, или в себя, или игрок УЖЕ мертв - игнорируем
+        if (target == null || target.Owner.ClientId == base.OwnerId || target.HP.Value <= 0) return;
 
-        // Защита: не наносим урон самому себе
-        if (target.Owner.ClientId == base.OwnerId) return;
-
-        // Наносим урон
+        // Вычисляем новое ХП
         int newHp = Mathf.Max(0, target.HP.Value - _damage);
         target.HP.Value = newHp;
+
+        // Если этим выстрелом мы убили врага
+        if (newHp == 0)
+        {
+            // ПРАВИЛЬНЫЙ ПОИСК ВЛАДЕЛЬЦА ПУЛИ:
+            // Берем соединение владельца пули и обращаемся к его главному объекту (Игроку)
+            if (base.Owner != null && base.Owner.FirstObject != null)
+            {
+                var attacker = base.Owner.FirstObject.GetComponent<PlayerNetwork>();
+                if (attacker != null)
+                {
+                    attacker.Score.Value++;
+                    Debug.Log($"[Server] Игрок {attacker.Nickname.Value} убил {target.Nickname.Value}. Счёт: {attacker.Score.Value}");
+                }
+            }
+        }
 
         // Уничтожаем пулю в сети
         base.ServerManager.Despawn(gameObject);

@@ -9,6 +9,10 @@ public class PlayerNetwork : NetworkBehaviour
     public readonly SyncVar<string> Nickname = new();
     public readonly SyncVar<int> HP = new(100);
     public readonly SyncVar<bool> IsAlive = new(true);
+    public readonly SyncVar<int> Score = new(0);
+    public int MaxAmmo = 10;
+    public readonly SyncVar<int> Ammo = new(10);
+
 
     private CharacterController _cc;
     private MeshRenderer _meshRenderer;
@@ -82,17 +86,29 @@ public class PlayerNetwork : NetworkBehaviour
         TeleportObserversRpc(newPos);
         HP.Value = 100;
         IsAlive.Value = true;
+        Ammo.Value = MaxAmmo;
     }
 
     [ObserversRpc]
     private void TeleportObserversRpc(Vector3 newPos)
     {
-        // ЗАМЕНА IsServerInitialized -> IsServerInitializedInitialized
-        if (base.IsOwner && !base.IsServerInitialized) 
-        {
-            if (_cc != null) _cc.enabled = false;
-            transform.position = newPos;
-            if (_cc != null) _cc.enabled = true;
-        }
+        if (base.IsServerInitialized) return;
+
+        if (_cc != null) _cc.enabled = false;
+        transform.position = newPos;
+        if (_cc != null) _cc.enabled = true;
     }
+
+
+    public void Teleport(Vector3 newPos)
+    {
+        // 1. Отключаем CC на сервере, чтобы Unity разрешил изменить позицию
+        if (_cc != null) _cc.enabled = false;
+        transform.position = newPos;
+        if (_cc != null) _cc.enabled = true;
+
+        // 2. Вызываем RPC, чтобы телепортировать локального клиента (владельца)
+        TeleportObserversRpc(newPos);
+    }
+
 }

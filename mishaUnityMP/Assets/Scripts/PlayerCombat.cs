@@ -102,8 +102,16 @@ public class PlayerCombat : NetworkBehaviour
         PlayerNetwork targetPlayer = targetObject.GetComponent<PlayerNetwork>();
 
         if (targetPlayer == null || targetPlayer == _playerNetwork) return;
+        if (!targetPlayer.IsAlive.Value) return; // Уже мертв
 
         int nextHp = Mathf.Max(0, targetPlayer.HP.Value - damage);
         targetPlayer.HP.Value = nextHp;
+
+        // Если этим выстрелом убили врага, добавляем себе очко
+        if (nextHp == 0)
+        {
+            _playerNetwork.Score.Value++;
+        }
     }
+
 }
